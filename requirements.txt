@@ -1,0 +1,7 @@
+# 祥旺库存工具依赖（都很常见，纯 Python，无需编译）
+# 建议用 Python 3.12 或更新版本；3.10 / 3.11 也能跑，只是会自动选老一点的库
+openpyxl>=3.1       # 读写 Excel
+pdfplumber>=0.11    # 解析 PDF 货盘 + 渲染成图片判断打勾
+numpy>=1.24         # 判断渲染出来的绿色勾（Python 3.12+ 会自动装到 2.x）
+requests>=2.31      # 调用 WooCommerce REST API
+PyYAML>=6.0         # 读 config.yaml

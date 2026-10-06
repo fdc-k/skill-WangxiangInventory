@@ -1,0 +1,13 @@
+# 真实密钥不要提交
+config/config.yaml
+# 运行产物 / 缓存
+output/
+.cache/
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+# macOS
+.DS_Store

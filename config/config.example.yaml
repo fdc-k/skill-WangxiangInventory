@@ -1,0 +1,90 @@
+# ============================================================================
+# 祥旺库存工具 配置文件模板
+# ----------------------------------------------------------------------------
+# 使用方法：把本文件复制成 config.yaml，然后按下面的注释逐项填写。
+#   cp config/config.example.yaml config/config.yaml
+# 说明文档见 docs/ 目录。
+# ============================================================================
+
+# ---------------------------------------------------------------- 网店信息
+store:
+  # 你的独立站网址（不用带 /wp-json，也不用带结尾斜杠）
+  base_url: "dailyessentials.club"
+
+  # WooCommerce -> 设置 -> 高级 -> REST API 里生成的密钥
+  consumer_key: "ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  consumer_secret: "cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # 一般不用改
+  verify_ssl: true          # 如果服务器证书有问题可临时改成 false
+  timeout: 60               # 每次请求超时（秒）
+  per_page: 100             # 每次拉取的商品条数
+  api_version: "wc/v3"
+
+# ---------------------------------------------------------------- 目录设置
+paths:
+  output_dir: "output"                    # 所有报表输出到这个目录
+  mapping_file: "config/product_map.csv"  # 商品映射表
+
+# ---------------------------------------------------------------- 库存来源
+# 每个来源是一份库存文件。adapter 决定用哪种解析器：
+#   excel_table —— 普通 Excel 表格（商品名 / 尺码 / 数量 三列）
+#   pdf_pallet  —— 「货盘」样式的 PDF（带灰色分区标题 + ✅ 尺码格）
+sources:
+  - id: SP5
+    label: "SP5 蜘蛛库存表"
+    file: "demo-inventory/10.5SP5蜘蛛库存表.xlsx"
+    adapter: excel_table
+    options:
+      sheet: Sheet1
+      product_column: H      # 商品名所在列（合并单元格也可以）
+      size_column: I         # 尺码所在列
+      quantity_column: J     # 数量所在列（没有数量就删掉这一行）
+      start_row: 1
+
+  - id: ALO
+    label: "ALO 库存表"
+    file: "demo-inventory/2026.10.5ALO库存表.xlsx"
+    adapter: excel_table
+    options:
+      sheet: Sheet1
+      product_column: B
+      size_column: C
+      quantity_column: D
+
+  - id: PALLET
+    label: "Essentials 货盘 PDF"
+    file: "demo-inventory/10.5Essentials 货盘.pdf"
+    adapter: pdf_pallet
+    options:
+      page: 1
+      # 分区名 -> 左右两栏分别代表什么，用于和网店商品对上号
+      section_columns:
+        Sp5der:        ["卫衣(hoodie)", "裤子(pant)"]
+        ALO:           ["上衣(tops)",   "裤子(pants)"]
+        Stussy:        ["上衣(tops)",   "上衣(tops)"]
+        Kith T-shirt:  ["T恤(tee)",     "T恤(tee)"]
+
+# ---------------------------------------------------------------- 同步设置
+sync:
+  # auto     —— 本店该变体「管理库存」就同步数量，否则只同步有货/缺货
+  # quantity —— 强制按数量同步（会给变体打开「管理库存」）
+  # status   —— 只同步有货 / 缺货，不动数量
+  mode: auto
+  update_status: true       # 是否同时更新「有货/缺货」状态
+
+  # 来源只有 ✅（没有数量）但网店变体开着「管理库存」时怎么办：
+  #   status_and_zero（默认）—— 判缺货时把数量一起置 0，判有货时只改状态
+  #   status                 —— 数量原样不动，只改有货/缺货
+  # 注意：如果来源说「有货」但网店数量是 0，工具不会猜数字，
+  #       这类条目会进「需人工处理」，请人工填数量。
+  no_qty_policy: status_and_zero
+
+# ---------------------------------------------------------------- 其它
+options:
+  fuzzy_threshold: 0.86     # 名称模糊匹配阈值（0~1，越大越严格）
+
+  # 有些商品在店里是「组合款」出售（SKU 字段里写了两个货号，如
+  #   "192BT212050F 130BT212020F"）。打开下面这个开关后，货盘里的单件货号
+  # 也会命中这类组合商品。默认关闭，避免误更新；建议先跑 diff 确认。
+  include_combo_skus: false

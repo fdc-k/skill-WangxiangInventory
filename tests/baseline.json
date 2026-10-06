@@ -1,0 +1,9 @@
+{
+  "_comment": "回归基线：修改解析器后跑 `python3 -m wangxiang selftest`，数量对不上就说明解析结果变了。",
+  "sources": {
+    "SP5":    {"rows": 84,  "products": 18},
+    "ALO":    {"rows": 73,  "products": 15},
+    "PALLET": {"rows": 850, "products": 130}
+  },
+  "total_rows": 1007
+}
